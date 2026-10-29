@@ -240,7 +240,8 @@ input,select,textarea{font-size:14px;color:var(--fg);background:var(--surface);b
 .trs{flex-wrap:wrap}
 .trs .chev{margin-left:auto;background:rgba(255,255,255,.6);border-radius:8px;padding:4px 10px;font-size:12px;letter-spacing:.02em;text-transform:none}
 .trs .chev::before{content:"Abrir "}
-.trail[open] .trs .chev::before{content:"Fechar "}
+.trail.open .trs .chev::before{content:"Fechar "}
+.trs{width:100%;border:0;text-align:left;font-family:inherit;cursor:pointer;color:var(--band-ink)}
 .trs .r{flex-basis:100%;margin-left:0!important;order:3;white-space:normal!important}
 .trnext{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .trnext small{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
@@ -564,6 +565,12 @@ body{margin:0}
 <!-- ESTUDOS -->
 <section id="v-estudos" hidden>
   <div class="pgh"><h1>Estudos</h1><button class="btn acc" type="button" data-act="study">▶ Sessão guiada</button></div>
+  <div class="mod gr"><div class="mh">⏱️ Estudo de hoje<button class="plus" type="button" data-add="estudo">+ Registrar</button><span class="r" id="sgPct"></span></div><div class="mb">
+    <div class="row" style="gap:10px;flex-wrap:nowrap;align-items:baseline"><span class="wv" id="sgDone" style="font-size:30px"></span><span class="muted" id="sgMeta"></span></div>
+    <div class="prog"><i id="sgBar" style="background:var(--ok)"></i></div>
+    <ul class="lst" id="sgList"></ul>
+    <div class="row" style="justify-content:space-between"><span class="small muted" id="sgWeek"></span><button class="btn sm" type="button" id="sgEdit">Mudar a meta</button></div>
+  </div></div>
   <div class="grid2">
     <div class="mod li"><div class="mh">🧭 Fila de temas<button class="plus" data-add="tema">+ Tema</button></div><div class="mb"><p class="small muted" style="margin:0">Um de cada vez: o primeiro da fila é o atual.</p><div class="queue" id="queue"></div></div></div>
     <div class="mod or" hidden><div class="mh"><span id="stTitle">Etapas</span><button class="plus" data-add="etapa">+ Etapa</button><span class="r" id="trProg"></span></div><div class="mb"><div class="prog"><i id="trBar"></i></div><ul class="steps" id="steps"></ul></div></div>
@@ -577,10 +584,10 @@ body{margin:0}
       <div class="method"><b>Nos dias seguintes</b>Revisões espaçadas, testar-se, dormir bem, mexer o corpo.</div>
     </div></div>
   </div>
-  <details class="mod li trail" id="trailBox">
-    <summary class="mh trs"><span>🗺️ Trilha de Política</span><span class="r" id="trSum"></span><span class="chev">▾</span></summary>
-    <div class="mb" id="trail"></div>
-  </details>
+  <div class="mod li trail" id="trailBox">
+    <button type="button" class="mh trs" id="trailHead" aria-expanded="false" aria-controls="trail"><span>🗺️ Trilha de Política</span><span class="r" id="trSum"></span><span class="chev">▾</span></button>
+    <div class="mb" id="trail" hidden></div>
+  </div>
 </section>
 
 <!-- LEITURA -->
@@ -655,7 +662,7 @@ const DEF={
  sab:[["06:30","07:00","Acordar","pessoal",""],["07:00","08:10","Academia","saude",""],["08:10","08:40","Café da manhã","pessoal",""],["08:40","10:10","Estudo longo","estudo","3 pomodoros","study"],["10:10","11:30","Casa, quebra-cabeça ou livro","lazer","Arrumar a casa se não deu na sexta"],["11:40","12:20","Buscar a namorada","pessoal",""],["12:30","13:30","Almoço","pessoal",""],["13:30","22:00","Tarde e noite livres","lazer","Sair, filme, descanso. Sem culpa"],["22:30","06:30","Dormir","descanso",""]],
  dom:[["06:30","07:00","Acordar","pessoal",""],["07:00","08:10","Academia","saude",""],["08:30","09:30","Fé","fe",""],["09:30","10:30","Estudo","estudo","2 pomodoros","study"],["10:30","18:30","Lazer e descanso","lazer","Filme, passeio, quebra-cabeça"],["18:30","19:00","Revisão e planejar a semana","estudo","Repetição espaçada + lista da semana"],["19:00","19:45","Jantar","pessoal",""],["20:15","04:10","Dormir","descanso","Segunda tem academia"]]};
 const toObj=a=>({s:a[0],e:a[1],n:a[2],c:a[3],d:a[4]||"",k:a[5]||""});
-["util","sab","dom"].forEach(k=>DEF[k]=DEF[k].filter(b=>b[3]==="estudo"));
+["util","sab","dom"].forEach(k=>DEF[k]=[]);
 const clone=o=>JSON.parse(JSON.stringify(o));
 const KEY="minharotina-v05";
 const today=new Date();const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
@@ -664,8 +671,8 @@ const MK={"🥬 Hortifrúti":["Banana","Maçã","Alface","Tomate"],"🥩 Açougu
 let S={rot:{util:DEF.util.map(toObj),sab:DEF.sab.map(toObj),dom:DEF.dom.map(toObj)},aviso:4,done:{},study:[],recalls:[],reviews:[],
  plan:[],
  g:{on:false,log:[],dirty:true,clientId:"",calId:"",email:"",evRev:{}},atualizadoEm:0,trilhaDone:[0],checks:{},
- habits:["Academia","Estudar 1h","Beber a meta de água","Ler 20 páginas","Dormir até 20h15","Telas até 2h","Oração"],hmarks:{},
- water:{peso:null,meta:3000,log:{},every:120},
+ habits:["Academia","Estudar 2h","Beber a meta de água","Ler 20 páginas","Dormir até 20h15","Telas até 2h","Oração"],hmarks:{},
+ water:{peso:null,meta:3000,log:{},every:120},studyGoal:120,
  books:[{t:"Política é para Todos",a:"Gabriela Prioli",pg:0,tot:0,st:"quero",tema:"Política"},{t:"Como as Democracias Morrem",a:"Steven Levitsky e Daniel Ziblatt",pg:0,tot:0,st:"quero",tema:"Política"}],pace:20,
  quotes:[],
  lists:{motiv:["Mudar de carreira para a tecnologia","Entender política por todos os lados","Ter uma rotina que me deixa em paz"],afirm:["Um pomodoro de cada vez.","Disciplina é liberdade.","Descansar também faz parte do plano."],forcas:["Organização","Persistência","Curiosidade"],fraq:["Procrastinação","Tempo de tela à noite"],habil:["Desenvolvimento frontend","Uso de IA no trabalho","Estudo com métodos de aprendizagem"]},
@@ -683,8 +690,8 @@ Object.assign(S,{
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/minharotina-80b1e6a5a4e5";   // gaveta do Minha Rotina — NÃO MUDAR
-const VERSAO="1.1";
-const ATUALIZACOES=[{v:"1.1",data:"29/10/2026",itens:["A rotina começa só com os blocos de estudo. O resto você inclui do seu jeito, pelo botão + ou em Rotina → Editar.","Meta de água passa para 3 litros por dia."]},{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
+const VERSAO="1.2";
+const ATUALIZACOES=[{v:"1.2",data:"29/10/2026",itens:["Estudo sem horário fixo: a meta é de 2 horas por dia, e você registra a hora e quanto tempo estudou (botão + ou aba Estudos).","A rotina começa vazia, para você montar do seu jeito.","Corrigido: a Trilha de Política não abria no iPhone."]},{v:"1.1",data:"29/10/2026",itens:["A rotina começa só com os blocos de estudo. O resto você inclui do seu jeito, pelo botão + ou em Rotina → Editar.","Meta de água passa para 3 litros por dia."]},{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
 const DEFAULTS=clone(S);
 function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return b;const r=Object.assign(b,v);
   for(const k of Object.keys(DEFAULTS)){const d=DEFAULTS[k];if(Array.isArray(d)&&!Array.isArray(r[k]))r[k]=r[k]&&typeof r[k]==="object"?Object.values(r[k]):[];else if(d&&typeof d==="object"&&!Array.isArray(d)&&(typeof r[k]!=="object"||r[k]===null||Array.isArray(r[k])))r[k]=clone(d);}
@@ -696,7 +703,8 @@ function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return 
   Object.keys(r.steps||{}).forEach(k=>{if(!Array.isArray(r.steps[k]))r.steps[k]=r.steps[k]?Object.values(r.steps[k]):[];});
   Object.keys(r.water.log||{}).forEach(k=>{if(!Array.isArray(r.water.log[k]))r.water.log[k]=Object.values(r.water.log[k]||{});});
   return r;}
-function migra(r){if(!r.mig11){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c==="estudo");});r.done={};r.water.meta=3000;r.mig11=true;r.g.dirty=r.g.on;}return r;}
+function migra(r){if(!r.mig12){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c!=="estudo"||!["Trilha de estudos","Recordação ativa","Estudo longo","Estudo","Revisão e planejar a semana"].includes(b.n));});r.habits=(r.habits||[]).map(h=>h==="Estudar 1h"?"Estudar 2h":h);r.studyGoal=r.studyGoal||120;r.mig12=true;r.mig11=true;r.water.meta=3000;r.done={};r.g.dirty=r.g.on;}
+  if(!r.mig11){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c==="estudo");});r.done={};r.water.meta=3000;r.mig11=true;r.g.dirty=r.g.on;}return r;}
 try{const raw=localStorage.getItem(KEY);if(raw)S=migra(normaliza(JSON.parse(raw)));}catch(e){}
 let fbRef=null,fbTimer=null,ignorar=false,pendente=false;
 const SELOS={local:["","Salvo no aparelho"],con:["con","Conectando…"],salvando:["con","Salvando…"],on:["on","Salvo na nuvem"],off:["off","Sem internet · salvo no aparelho"],erro:["off","Falha ao salvar na nuvem"]};
@@ -709,7 +717,7 @@ function carregarFirebase(){cloud("con");const urls=["https://www.gstatic.com/fi
 function iniciarFirebase(){try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE);const db=firebase.database();fbRef=db.ref(SALA);
   db.ref(".info/connected").on("value",x=>{if(x.val()===true){cloud(pendente?"salvando":"on");if(pendente)enviar();}else cloud("off");});
   fbRef.on("value",snap=>{if(ignorar){ignorar=false;return;}const v=snap.val();
-    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);if(!S.mig11){S=migra(S);gravarLocal();setTimeout(save,0);}gravarLocal();draft=null;render();}else enviar();}
+    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);if(!S.mig12){S=migra(S);gravarLocal();setTimeout(save,0);}gravarLocal();draft=null;render();}else enviar();}
     else enviar();cloud(pendente?"salvando":"on");},()=>cloud("erro"));}catch(e){cloud("erro");}}
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};
 const dur=b=>{let d=m(b.e)-m(b.s);if(d<=0)d+=1440;return d};
@@ -745,7 +753,7 @@ function studyToday(){return S.study.filter(x=>x.date===TODAY).reduce((a,x)=>a+x
 function renderTiles(){
   const w=wToday(),hm=habToday(),st=studyToday(),bk=S.books.find(b=>b.st==="lendo");
   document.getElementById("todayTiles").innerHTML=[
-    ["📚","Estudo hoje",hfmt(st)||"0 min",Math.min(100,st/75*100),"var(--c-estudo)","estudos"],
+    ["📚","Estudo hoje",`${hfmt(st)||"0 min"} / ${hfmt(S.studyGoal||120)}`,Math.min(100,st/(S.studyGoal||120)*100),"var(--c-estudo)","estudos"],
     ["💧","Água",L(w)+" / "+L(S.water.meta),Math.min(100,w/S.water.meta*100),"#3f9fc4","agua"],
     ["✅","Hábitos",`${hm}/${S.habits.length}`,hm/(S.habits.length||1)*100,"var(--ok)","habitos"],
     ["📖","Lendo",bk?`${Math.round(bk.pg/(bk.tot||1)*100)}%`:"—",bk?bk.pg/(bk.tot||1)*100:0,"var(--c-lazer)","leitura"]
@@ -753,6 +761,7 @@ function renderTiles(){
 }
 function renderNow(){
   const t=nowMin(),bl=blocksToday();let idx=bl.findIndex(b=>inBlock(b,t));const el=document.getElementById("nowCard");
+  if(!bl.length){document.getElementById("nowRange").textContent="";el.innerHTML=`<div class="what">Rotina livre</div><div class="meta"><span>Monte a sua rotina em Rotina → Editar ou pelo botão +.</span></div><button class="btn dark" type="button" data-add="bloco" style="align-self:flex-start">+ Bloco na rotina</button>`;return;}
   if(idx<0){const nx=bl.find(b=>m(b.s)>t)||bl[0];document.getElementById("nowRange").textContent="";el.innerHTML=`<div class="what">Intervalo</div><div class="meta"><span>Próximo: ${esc(nx.n)} às ${nx.s}</span></div>`;return;}
   const cur=bl[idx],pass=((t-m(cur.s))+1440)%1440,d=dur(cur),nx=bl[(idx+1)%bl.length];
   document.getElementById("nowRange").textContent=`${cur.s}–${cur.e}`;
@@ -778,7 +787,7 @@ function renderClock(){
 function renderTimeline(){
   const bl=blocksToday(),done=S.done[TODAY]||{},t=nowMin();document.getElementById("avisoTxt").textContent=S.aviso;
   document.getElementById("timeline").innerHTML=bl.map((b,i)=>{const act=b.k==="study"?'<div class="acts"><button class="btn sm" data-act="study">▶ Sessão guiada</button></div>':b.k==="free"?'<div class="acts"><button class="btn sm" data-act="free">⏳ Banco de tarefas</button></div>':b.k==="recall"?'<div class="acts"><button class="btn sm" data-act="recall">🧠 Recordar</button></div>':"";
-    return `<li class="${inBlock(b,t)?"cur":""} ${done[i]?"done":""}"><span class="t">${b.s}</span><span class="pin" style="background:${cv(b.c)}"></span><div><div class="nm">${esc(b.n)}</div>${b.d?`<div class="sub">${esc(b.d)}</div>`:""}${act}</div><button class="chk ${done[i]?"on":""}" data-chk="${i}" aria-label="Marcar ${esc(b.n)} como feito">${done[i]?"✓":""}</button></li>`}).join("");
+    return `<li class="${inBlock(b,t)?"cur":""} ${done[i]?"done":""}"><span class="t">${b.s}</span><span class="pin" style="background:${cv(b.c)}"></span><div><div class="nm">${esc(b.n)}</div>${b.d?`<div class="sub">${esc(b.d)}</div>`:""}${act}</div><button class="chk ${done[i]?"on":""}" data-chk="${i}" aria-label="Marcar ${esc(b.n)} como feito">${done[i]?"✓":""}</button></li>`}).join("")||'<li style="display:block"><span class="small muted">Nenhum bloco ainda. Toque em + e escolha "Bloco na rotina".</span></li>';
 }
 document.getElementById("timeline").onclick=e=>{const c=e.target.closest("[data-chk]");if(!c)return;S.done[TODAY]=S.done[TODAY]||{};S.done[TODAY][c.dataset.chk]=!S.done[TODAY][c.dataset.chk];save();renderTimeline();};
 function renderPlan(){
@@ -799,7 +808,7 @@ const bindClose=()=>{const c=document.getElementById("cls");if(c)c.onclick=close
 const FREE=[{ic:"📚",n:"Pomodoro da trilha",d:"Continuar a Etapa 0: Módulo 0",min:25},{ic:"📖",n:"Leitura",d:"Páginas do livro atual",min:20},{ic:"🔁",n:"Revisão rápida",d:"Flashcards ou teste do NotebookLM",min:10},{ic:"💻",n:"Frontend e IA",d:"Praticar para a transição de carreira",min:25}];
 function openFree(){
   sheet(head("Tempo livre")+`<p class="small muted" style="margin:0">Escolha uma e o cronômetro abre. O tempo entra como estudo bônus.</p><div class="opts">${FREE.map((f,i)=>`<button class="opt" data-f="${i}"><span class="ic">${f.ic}</span><span><b>${f.n}</b><small>${f.d}</small></span><span class="mono small">${f.min} min</span></button>`).join("")}</div>`);bindClose();
-  root.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const f=FREE[b.dataset.f];runTimer(f.n,f.min,()=>{S.study.push({date:TODAY,min:f.min,free:true});save();toast(`+${f.min} min de estudo bônus`);closeSheet();render();});});
+  root.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const f=FREE[b.dataset.f];runTimer(f.n,f.min,()=>{S.study.push({date:TODAY,min:f.min,free:true,at:nowHM(),what:f.n});save();toast(`+${f.min} min de estudo bônus`);closeSheet();render();});});
 }
 function runTimer(title,min,onEnd,extra=""){
   let left=min*60,paused=false;
@@ -823,7 +832,7 @@ function focusRound(r){runTimer(`Foco · pomodoro ${r}`,25,()=>recallStep(r),pha
 function recallStep(r){
   clearInterval(timerId);
   sheet(`<h2>Recuperação ativa</h2>${phaseBar(2)}<p style="margin:0">Sem olhar o material: quais foram as ideias principais?</p><textarea id="rc" placeholder="Escreva com as suas palavras…"></textarea><button class="btn dark" id="nx">Salvar e descansar 3 minutos</button>`);
-  document.getElementById("nx").onclick=()=>{const v=document.getElementById("rc").value.trim();if(v)S.recalls.push({date:TODAY,t:v});S.study.push({date:TODAY,min:25});save();
+  document.getElementById("nx").onclick=()=>{const v=document.getElementById("rc").value.trim();if(v)S.recalls.push({date:TODAY,t:v});S.study.push({date:TODAY,min:25,at:nowHM(),what:nextStep()});save();
     runTimer("Descanso silencioso",3,()=>afterRound(r),phaseBar(3)+'<p class="small muted" style="margin:0;text-align:center">Faça um chá, olhe pela janela. Não pegue o celular.</p>');};
 }
 function afterRound(r){
@@ -1016,7 +1025,8 @@ function renderTrail(){
   const all=allItems(),done=all.filter(o=>S.trail[o.id]).length,nx=nextItem();
   document.getElementById("trSum").textContent=nx?`${done}/${all.length} · próximo: ${nx.x[0]}`:`${done}/${all.length} · concluída`;
   const box=document.getElementById("trail");
-  if(!box.closest("details").open){box.innerHTML="";return;}
+  const tbx=document.getElementById("trailBox");tbx.classList.toggle("open",!!S.trailBoxOpen);document.getElementById("trailHead").setAttribute("aria-expanded",S.trailBoxOpen?"true":"false");
+  if(!S.trailBoxOpen){box.hidden=true;box.innerHTML="";return;}box.hidden=false;
   let h=`<div class="row" style="gap:10px;flex-wrap:nowrap"><div class="rbar" style="flex:1"><i style="width:${done/all.length*100}%"></i></div><span class="small mono muted">${done}/${all.length}</span></div>`;
   if(nx){const pr=prompts(nx);
     h+=`<div class="trnext"><small>📍 Continue daqui · ${nx.et.e}: ${esc(nx.et.t)}</small><b class="big">${esc(nx.x[0])}</b>${nx.x[1]?`<span class="small muted">${esc(nx.x[1])}${nx.x[2]?" · "+esc(nx.x[2]):""}</span>`:""}
@@ -1035,14 +1045,26 @@ function renderTrail(){
   box.innerHTML=h;
   box.querySelectorAll("details.et").forEach(d=>d.addEventListener("toggle",()=>{S.trailOpen[d.dataset.eto]=d.open;save();}));
 }
-document.getElementById("trailBox").addEventListener("toggle",e=>{if(e.target.id==="trailBox"){S.trailBoxOpen=e.target.open;save();renderTrail();}});
+document.getElementById("trailHead").onclick=()=>{S.trailBoxOpen=!S.trailBoxOpen;save();renderTrail();};
 document.getElementById("trail").addEventListener("change",e=>{const c=e.target.closest("[data-tk]");if(!c)return;S.trail[c.dataset.tk]=c.checked;save();renderTrail();});
 document.getElementById("trail").addEventListener("click",e=>{const c=e.target.closest("[data-cp]");if(c){const nx=nextItem();if(nx)copyTxt(prompts(nx)[+c.dataset.cp][1]);return;}
   const d=e.target.closest("[data-tdone]");if(d){S.trail[d.dataset.tdone]=true;const o=allItems().find(x=>x.id===d.dataset.tdone);if(o&&o.x[1]&&!o.x[1].includes("NotebookLM"))scheduleReviews(o.x[0]);save();renderTrail();toast("Boa! Próximo item liberado");}});
+const nowHM=()=>{const n=new Date();return `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`;};
+function renderStudyGoal(){
+  const g=S.studyGoal||120,ses=S.study.map((x,i)=>[x,i]).filter(([x])=>x.date===TODAY).sort((a,b)=>(a[0].at||"").localeCompare(b[0].at||"")),tot=ses.reduce((a,[x])=>a+x.min,0);
+  document.getElementById("sgDone").textContent=hfmt(tot)||"0 min";document.getElementById("sgMeta").textContent=`de ${hfmt(g)} por dia`;
+  document.getElementById("sgBar").style.width=Math.min(100,tot/g*100)+"%";document.getElementById("sgPct").textContent=tot>=g?"meta batida 🎉":`faltam ${hfmt(g-tot)}`;
+  document.getElementById("sgList").innerHTML=ses.length?ses.map(([x,i])=>`<li><span class="mono small muted" style="min-width:44px">${esc(x.at||"—")}</span><span style="flex:1;min-width:0">${esc(x.what||"Estudo")}</span><b class="small">${hfmt(x.min)}</b><button class="x" type="button" data-sgd="${i}" aria-label="Apagar este registro">×</button></li>`).join(""):'<li><span class="muted small">Nada registrado hoje. Estudou? Toque em "+ Registrar" e anote a hora e quanto tempo.</span></li>';
+  const mon=new Date(today);mon.setDate(today.getDate()-((today.getDay()+6)%7));const mk=iso(mon);const wk=S.study.filter(x=>x.date>=mk&&x.date<=TODAY).reduce((a,x)=>a+x.min,0);
+  document.getElementById("sgWeek").textContent=`Nesta semana: ${hfmt(wk)||"0 min"}`;
+}
+document.getElementById("sgList").onclick=e=>{const b=e.target.closest("[data-sgd]");if(!b)return;S.study.splice(+b.dataset.sgd,1);save();renderStudyGoal();renderTiles();};
+document.getElementById("sgEdit").onclick=()=>{sheet(head("Meta de estudo")+`<form class="form" id="sgF"><label class="field">Horas por dia<input id="sgH" type="number" min="0.25" max="12" step="0.25" value="${(S.studyGoal||120)/60}"></label><button class="btn dark" type="submit">Salvar</button></form>`);bindClose();
+  document.getElementById("sgF").onsubmit=e=>{e.preventDefault();const h=parseFloat(String(document.getElementById("sgH").value).replace(",","."));if(h>0){S.studyGoal=Math.round(h*60);save();closeSheet();render();toast("Meta atualizada");}};};
 const curTema=()=>S.queue[0]||"";
 function nextStep(){if(curTema()==="Política"){const n=nextItem();if(n)return `${n.et.e} · ${n.x[0]}`;}const t=curTema(),st=S.steps[t]||[];const n=st.find(x=>!x.ok);return t?(n?`${t} · ${n.a}${n.b?": "+n.b:""}`:t):"Escolha um tema na fila";}
 function renderStudies(){
-  const tb=document.getElementById("trailBox");if(S.trailBoxOpen&&!tb.open)tb.open=true;renderTrail();
+  renderTrail();renderStudyGoal();
   document.getElementById("queue").innerHTML=S.queue.length?S.queue.map((n,i)=>`<div class="qi ${i===0?"cur":""}"><span class="n">${i+1}</span><b style="flex:1;min-width:0">${esc(n)}</b><span class="small muted">${i===0?"atual":i===1?"próximo":"depois"}</span>${i>0?`<button class="mv" data-qup="${i}" aria-label="Subir ${esc(n)}">▲</button>`:""}<button class="x" data-qdel="${i}" aria-label="Remover ${esc(n)}">×</button></div>`).join(""):'<span class="muted small">Nenhum tema. Toque em "+ Tema".</span>';
   const t=curTema(),st=S.steps[t]=S.steps[t]||[];const ok=st.filter(x=>x.ok).length;
   document.getElementById("stTitle").textContent=t?`🏛️ ${t}: etapas`:"Etapas";
@@ -1200,7 +1222,7 @@ document.getElementById("gCidSave").onclick=()=>{const v=document.getElementById
 document.getElementById("gColors")&&(document.getElementById("gColors").innerHTML=Object.keys(CATS).map(c=>`<div><span class="sw" style="background:${cv(c)}"></span>${CATS[c]} → cor "${GCOLOR[c]}"</div>`).join(""));
 
 // ===== ADICIONAR (botão + e "+ Item" de cada aba)
-const QA=[["livro","📖","Livro"],["habito","✅","Hábito"],["plano","🐸","Tarefa de amanhã"],["agua","💧","Água"],["mercado","🛒","Item do mercado"],["tema","🧭","Tema de estudo"],["etapa","🪜","Etapa de estudo"],["bloco","🗓️","Bloco na rotina"],["citacao","❝","Citação"],["cl:w","🔁","Tarefa da semana"],["cl:m","📅","Tarefa do mês"],["cl:y","🎯","Meta do ano"],["eu","🌱","Desenvolvimento pessoal"],["link","🔗","Atalho"],["frase","💡","Frase"]];
+const QA=[["estudo","⏱️","Registrar estudo"],["livro","📖","Livro"],["habito","✅","Hábito"],["plano","🐸","Tarefa de amanhã"],["agua","💧","Água"],["mercado","🛒","Item do mercado"],["tema","🧭","Tema de estudo"],["etapa","🪜","Etapa de estudo"],["bloco","🗓️","Bloco na rotina"],["citacao","❝","Citação"],["cl:w","🔁","Tarefa da semana"],["cl:m","📅","Tarefa do mês"],["cl:y","🎯","Meta do ano"],["eu","🌱","Desenvolvimento pessoal"],["link","🔗","Atalho"],["frase","💡","Frase"]];
 document.getElementById("fab").onclick=()=>{sheet(head("Adicionar")+`<div class="qadd">${QA.map(([k,i,n])=>`<button type="button" data-qa="${k}"><i>${i}</i>${n}</button>`).join("")}</div>`);bindClose();root.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>openAdd(b.dataset.qa));};
 document.addEventListener("click",e=>{const a=e.target.closest("[data-add]");if(a){e.preventDefault();openAdd(a.dataset.add);}});
 const opt=(arr,sel)=>arr.map(([v,t])=>`<option value="${esc(v)}" ${v===sel?"selected":""}>${esc(t)}</option>`).join("");
@@ -1212,6 +1234,8 @@ const val=id=>{const el=document.getElementById("f_"+id);return el?(el.type==="c
 function openAdd(kind){
   const lbl={"cl:w":"Tarefa da semana","cl:m":"Tarefa do mês","cl:y":"Meta do ano"};
   const D={
+    estudo:{t:"Registrar estudo",f:`<div class="two"><label class="field">Hora que comecei<input id="f_at" type="time" value="${nowHM()}" required></label><label class="field">Quanto tempo (min)<input id="f_min" type="number" min="5" max="600" step="5" value="60" required></label></div><div class="row">${[25,30,45,60,90,120].map(v=>`<button type="button" class="btn sm" data-qm="${v}">${hfmt(v)}</button>`).join("")}</div><label class="field">O que estudei<input id="f_w" value="${esc(nextStep())}" placeholder="Ex.: Módulo 0"></label>`,
+      ok:()=>{const mn=+val("min");if(!mn)return null;S.study.push({date:TODAY,min:mn,at:val("at"),what:val("w")||"Estudo"});return["estudos",`+${hfmt(mn)} de estudo registrado`];}},
     livro:{t:"Adicionar livro",f:F.txt("t","Título","Ex.: Conflito de Visões")+F.txt("a","Autor","Ex.: Thomas Sowell",false)+`<div class="two">${F.txt("tot","Total de páginas","Ex.: 320",false,"number")}${F.sel("st","Situação",[["quero","Quero ler"],["lendo","Lendo agora"],["lido","Já li"]],"quero")}</div>`+F.sel("tema","Faz parte de qual tema?",[["","Nenhum (leitura livre)"],...S.queue.map(q=>[q,q])],""),
       ok:()=>{const st=val("st");if(st==="lendo")S.books.forEach(b=>{if(b.st==="lendo")b.st="quero";});const tot=+val("tot")||0;S.books.push({t:val("t"),a:val("a"),pg:st==="lido"?tot:0,tot:tot||(st==="lendo"?200:0),st,tema:val("tema"),meta:""});return["leitura","Livro adicionado"];}},
     habito:{t:"Novo hábito",f:F.txt("n","Hábito","Ex.: Alongar 10 min"),ok:()=>{S.habits.push(val("n"));return["habitos","Hábito adicionado"];}},
@@ -1235,6 +1259,7 @@ function openAdd(kind){
   const d=D[kind];if(!d)return;
   sheet(head(esc(d.t))+`<form class="form" id="addForm">${d.f}<button class="btn dark" type="submit">Salvar</button></form>`);bindClose();
   root.querySelectorAll("[data-qw]").forEach(b=>b.onclick=()=>{addWater(+b.dataset.qw);closeSheet();});
+  root.querySelectorAll("[data-qm]").forEach(b=>b.onclick=()=>{document.getElementById("f_min").value=b.dataset.qm;});
   const first=root.querySelector("input:not([type=checkbox]),select");if(first&&window.innerWidth>700)first.focus();
   document.getElementById("addForm").onsubmit=e=>{e.preventDefault();const r=d.ok();if(!r)return;save();closeSheet();if(r[0]){if(location.hash.slice(1)!==r[0])location.hash=r[0];else render();}else render();if(r[1])toast(r[1]);};
 }
