@@ -655,6 +655,7 @@ const DEF={
  sab:[["06:30","07:00","Acordar","pessoal",""],["07:00","08:10","Academia","saude",""],["08:10","08:40","Café da manhã","pessoal",""],["08:40","10:10","Estudo longo","estudo","3 pomodoros","study"],["10:10","11:30","Casa, quebra-cabeça ou livro","lazer","Arrumar a casa se não deu na sexta"],["11:40","12:20","Buscar a namorada","pessoal",""],["12:30","13:30","Almoço","pessoal",""],["13:30","22:00","Tarde e noite livres","lazer","Sair, filme, descanso. Sem culpa"],["22:30","06:30","Dormir","descanso",""]],
  dom:[["06:30","07:00","Acordar","pessoal",""],["07:00","08:10","Academia","saude",""],["08:30","09:30","Fé","fe",""],["09:30","10:30","Estudo","estudo","2 pomodoros","study"],["10:30","18:30","Lazer e descanso","lazer","Filme, passeio, quebra-cabeça"],["18:30","19:00","Revisão e planejar a semana","estudo","Repetição espaçada + lista da semana"],["19:00","19:45","Jantar","pessoal",""],["20:15","04:10","Dormir","descanso","Segunda tem academia"]]};
 const toObj=a=>({s:a[0],e:a[1],n:a[2],c:a[3],d:a[4]||"",k:a[5]||""});
+["util","sab","dom"].forEach(k=>DEF[k]=DEF[k].filter(b=>b[3]==="estudo"));
 const clone=o=>JSON.parse(JSON.stringify(o));
 const KEY="minharotina-v05";
 const today=new Date();const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
@@ -664,7 +665,7 @@ let S={rot:{util:DEF.util.map(toObj),sab:DEF.sab.map(toObj),dom:DEF.dom.map(toOb
  plan:[],
  g:{on:false,log:[],dirty:true,clientId:"",calId:"",email:"",evRev:{}},atualizadoEm:0,trilhaDone:[0],checks:{},
  habits:["Academia","Estudar 1h","Beber a meta de água","Ler 20 páginas","Dormir até 20h15","Telas até 2h","Oração"],hmarks:{},
- water:{peso:null,meta:2500,log:{},every:120},
+ water:{peso:null,meta:3000,log:{},every:120},
  books:[{t:"Política é para Todos",a:"Gabriela Prioli",pg:0,tot:0,st:"quero",tema:"Política"},{t:"Como as Democracias Morrem",a:"Steven Levitsky e Daniel Ziblatt",pg:0,tot:0,st:"quero",tema:"Política"}],pace:20,
  quotes:[],
  lists:{motiv:["Mudar de carreira para a tecnologia","Entender política por todos os lados","Ter uma rotina que me deixa em paz"],afirm:["Um pomodoro de cada vez.","Disciplina é liberdade.","Descansar também faz parte do plano."],forcas:["Organização","Persistência","Curiosidade"],fraq:["Procrastinação","Tempo de tela à noite"],habil:["Desenvolvimento frontend","Uso de IA no trabalho","Estudo com métodos de aprendizagem"]},
@@ -682,8 +683,8 @@ Object.assign(S,{
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/minharotina-80b1e6a5a4e5";   // gaveta do Minha Rotina — NÃO MUDAR
-const VERSAO="1.0";
-const ATUALIZACOES=[{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
+const VERSAO="1.1";
+const ATUALIZACOES=[{v:"1.1",data:"29/10/2026",itens:["A rotina começa só com os blocos de estudo. O resto você inclui do seu jeito, pelo botão + ou em Rotina → Editar.","Meta de água passa para 3 litros por dia."]},{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
 const DEFAULTS=clone(S);
 function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return b;const r=Object.assign(b,v);
   for(const k of Object.keys(DEFAULTS)){const d=DEFAULTS[k];if(Array.isArray(d)&&!Array.isArray(r[k]))r[k]=r[k]&&typeof r[k]==="object"?Object.values(r[k]):[];else if(d&&typeof d==="object"&&!Array.isArray(d)&&(typeof r[k]!=="object"||r[k]===null||Array.isArray(r[k])))r[k]=clone(d);}
@@ -695,7 +696,8 @@ function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return 
   Object.keys(r.steps||{}).forEach(k=>{if(!Array.isArray(r.steps[k]))r.steps[k]=r.steps[k]?Object.values(r.steps[k]):[];});
   Object.keys(r.water.log||{}).forEach(k=>{if(!Array.isArray(r.water.log[k]))r.water.log[k]=Object.values(r.water.log[k]||{});});
   return r;}
-try{const raw=localStorage.getItem(KEY);if(raw)S=normaliza(JSON.parse(raw));}catch(e){}
+function migra(r){if(!r.mig11){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c==="estudo");});r.done={};r.water.meta=3000;r.mig11=true;r.g.dirty=r.g.on;}return r;}
+try{const raw=localStorage.getItem(KEY);if(raw)S=migra(normaliza(JSON.parse(raw)));}catch(e){}
 let fbRef=null,fbTimer=null,ignorar=false,pendente=false;
 const SELOS={local:["","Salvo no aparelho"],con:["con","Conectando…"],salvando:["con","Salvando…"],on:["on","Salvo na nuvem"],off:["off","Sem internet · salvo no aparelho"],erro:["off","Falha ao salvar na nuvem"]};
 function cloud(e){const el=document.getElementById("cloud");if(!el)return;const x=SELOS[e]||SELOS.local;el.className="cloud "+x[0];el.lastElementChild.textContent=x[1];}
@@ -707,7 +709,7 @@ function carregarFirebase(){cloud("con");const urls=["https://www.gstatic.com/fi
 function iniciarFirebase(){try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE);const db=firebase.database();fbRef=db.ref(SALA);
   db.ref(".info/connected").on("value",x=>{if(x.val()===true){cloud(pendente?"salvando":"on");if(pendente)enviar();}else cloud("off");});
   fbRef.on("value",snap=>{if(ignorar){ignorar=false;return;}const v=snap.val();
-    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);gravarLocal();draft=null;render();}else enviar();}
+    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);if(!S.mig11){S=migra(S);gravarLocal();setTimeout(save,0);}gravarLocal();draft=null;render();}else enviar();}
     else enviar();cloud(pendente?"salvando":"on");},()=>cloud("erro"));}catch(e){cloud("erro");}}
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};
 const dur=b=>{let d=m(b.e)-m(b.s);if(d<=0)d+=1440;return d};
