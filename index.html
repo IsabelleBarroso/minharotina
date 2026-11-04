@@ -265,6 +265,41 @@ input,select,textarea{font-size:14px;color:var(--fg);background:var(--surface);b
 .bk input:checked + div b{text-decoration:line-through;color:var(--muted)}
 .ginfo{font-size:13px;color:var(--muted)}
 .ginfo b{color:var(--fg)}
+.ctabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ctabs button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:12px;padding:10px 4px;font:800 12.5px var(--f-ui);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.ctabs button i{font-style:normal;font-size:20px}
+.ctabs button small{font-weight:600;color:var(--muted);font-size:11px}
+.ctabs button[aria-selected="true"]{background:var(--pill);color:var(--pill-ink);border-color:var(--pill)}
+.ctabs button[aria-selected="true"] small{color:var(--pill-ink);opacity:.75}
+.mlist{display:flex;flex-direction:column;gap:10px}
+.mi{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.mi .th{width:52px;height:52px;border-radius:10px;display:grid;place-items:center;font-size:24px}
+.mi.podcast .th{background:var(--li-s)} .mi.video .th{background:var(--pk-s)} .mi.curso .th{background:var(--gr-s)}
+.mi b{display:block;font-size:14.5px;line-height:1.3}
+.mi .sub{font-size:12.5px;color:var(--muted)}
+.mi .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.mi .acts a{font-size:12.5px;font-weight:800;color:var(--fg);background:var(--sunk);border-radius:99px;padding:3px 10px;text-decoration:none}
+.mi.feito b{text-decoration:line-through;color:var(--muted)}
+.mi select{padding:4px 6px;font-size:12.5px}
+.cv{width:44px;height:64px;border-radius:4px;object-fit:cover;flex:0 0 auto;background:linear-gradient(160deg,#5a4590,#2b2148);color:#fff;font-size:8px;font-weight:800;padding:4px;display:flex;align-items:flex-end;line-height:1.1;overflow:hidden}
+img.cv{padding:0}
+.book .cover img{width:100%;height:100%;object-fit:cover;border-radius:5px}
+.book .cover.hasimg{padding:0;background:none}
+.psearch input{width:100%;font-size:16px;padding:11px 12px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pch{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;background:none;color:var(--fg);font:800 15px var(--f-ui);cursor:pointer;text-align:left}
+.pch .n{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
+.pch .chev{color:var(--muted);font-size:12px}
+.pb{display:flex;flex-direction:column;gap:10px;padding:0 12px 12px}
+.pr1{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.pr1 .tt{display:flex;align-items:center;gap:8px}
+.pr1 .tt b{font-size:14px;flex:1;min-width:0}
+.pr1 .tx{font-size:13.5px;line-height:1.5;white-space:pre-wrap;max-height:4.5em;overflow:hidden;position:relative}
+.pr1.open .tx{max-height:none}
+.pr1:not(.open) .tx::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1.6em;background:linear-gradient(transparent,var(--bg))}
+.ph{background:var(--ye-s);border-radius:4px;padding:0 3px;font-weight:700;color:var(--fg)}
+.pr1 .ft{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pr1 .src{font-size:11.5px;color:var(--muted);margin-left:auto}
 .dlist,.wlist{display:flex;flex-direction:column;gap:12px}
 .turno{display:flex;flex-direction:column;background:var(--surface);border-radius:10px;border:1px solid var(--line);overflow:hidden}
 .turno .tn{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px 4px}
@@ -454,11 +489,12 @@ body{margin:0}
   <button data-v="hoje" aria-current="page"><i>☀️</i>Hoje</button>
   <button data-v="rotina"><i>🗓️</i>Rotina</button>
   <button data-v="estudos"><i>📚</i>Estudos</button>
-  <button data-v="leitura"><i>📖</i>Leitura</button>
+  <button data-v="leitura"><i>🗂️</i>Conteúdos</button>
   <button data-v="habitos" class="dk"><i>✅</i>Hábitos</button>
   <button data-v="agua" class="dk"><i>💧</i>Água</button>
   <button data-v="eu" class="dk"><i>🌱</i>Eu</button>
   <button data-v="casa" class="dk"><i>🛒</i>Casa</button>
+  <button data-v="prompts" class="dk"><i>💬</i>Prompts</button>
   <button data-v="google" class="dk"><i>🔄</i>Google</button>
   <button data-v="mais" class="mb-only"><i>☰</i>Mais</button>
 </nav>
@@ -592,7 +628,9 @@ body{margin:0}
 
 <!-- LEITURA -->
 <section id="v-leitura" hidden>
-  <div class="pgh"><h1>Leitura</h1><button class="btn dark" type="button" data-add="livro">+ Adicionar livro</button></div>
+  <div class="pgh"><h1>Conteúdos</h1><button class="btn dark" type="button" id="cAddBtn">+ Adicionar</button></div>
+  <div class="ctabs" id="cTabs" role="tablist"></div>
+  <div id="c-livros" style="display:flex;flex-direction:column;gap:16px">
   <div class="tiles" id="bookTiles"></div>
   <div class="grid2">
     <div class="mod or"><div class="mh">📖 Lendo agora</div><div class="mb" id="reading"></div></div>
@@ -600,6 +638,19 @@ body{margin:0}
     <div class="mod bl"><div class="mh">❝ Citações</div><div class="mb"><form class="add" id="qForm"><input id="qIn" placeholder="Uma frase que te marcou…" aria-label="Nova citação"><button aria-label="Adicionar citação">+</button></form><div id="quotes" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
     <div class="mod li"><div class="mh">📚 Estante<button class="plus" data-add="livro">+ Livro</button></div><div class="mb"><div class="seg-st" id="shelfF"></div><ul class="lst" id="shelf"></ul></div></div>
   </div>
+  </div>
+  <div id="c-media" hidden style="display:flex;flex-direction:column;gap:16px">
+    <div class="seg-st" id="mediaF"></div>
+    <div class="mlist" id="mediaList"></div>
+  </div>
+</section>
+
+<!-- PROMPTS -->
+<section id="v-prompts" hidden>
+  <div class="pgh"><h1>Prompts</h1><button class="btn dark" type="button" data-add="prompt">+ Prompt</button></div>
+  <div class="psearch"><input id="pSearch" type="search" placeholder="Buscar prompt…" aria-label="Buscar prompt"></div>
+  <p class="small muted" style="margin:0">Toque em <b>Copiar</b> e cole no Claude, no ChatGPT ou no NotebookLM. Troque o que está <span class="ph">[entre colchetes]</span> pelos seus dados.</p>
+  <div id="pCats" style="display:flex;flex-direction:column;gap:12px"></div>
 </section>
 
 <!-- EU -->
@@ -627,6 +678,7 @@ body{margin:0}
     <button data-go="habitos"><i>✅</i>Hábitos<small>quadradinhos e consistência</small></button>
     <button data-go="agua"><i>💧</i>Água<small>meta e lembretes</small></button>
     <button data-go="eu"><i>🌱</i>Eu<small>desenvolvimento pessoal</small></button>
+    <button data-go="prompts"><i>💬</i>Prompts<small>separados por assunto</small></button>
     <button data-go="casa"><i>🛒</i>Casa<small>lista do mercado</small></button>
     <button data-go="google"><i>🔄</i>Google Agenda<small>sincronização</small></button>
   </div>
@@ -657,6 +709,9 @@ body{margin:0}
 (function(){
 const CATS={estudo:"Estudo",trabalho:"Trabalho",saude:"Saúde",lazer:"Lazer",descanso:"Descanso",pessoal:"Pessoal",fe:"Fé"};
 const cv=c=>`var(--c-${c})`;
+const LIVROS=[["Não Acredite em Tudo que Você Sente", "Robert L. Leahy"], ["Por que Ninguém Me Disse Isso Antes?", "Dra. Julie Smith"], ["Quebrando o Hábito de Ser Você Mesmo", "Dr. Joe Dispenza"], ["Deixa pra Lá", "Mel Robbins"], ["O Clube das 5 da Manhã", "Robin Sharma"], ["A Coragem de Não Agradar", "Ichiro Kishimi e Fumitake Koga"], ["A Montanha É Você", "Brianna Wiest"], ["A Vida É Curta Demais pra Viver o Mínimo das Coisas", "Iandê Albuquerque"], ["Rápido e Devagar: Duas Formas de Pensar", "Daniel Kahneman"]];
+const MEDIA0=[["podcast", "O que não te falaram sobre o álcool", "Eslen Podcast · com Dr. Vitor Blazius"], ["podcast", "#282: Por que você continua repetindo comportamentos que quer mudar", "Psicologia na Prática"], ["podcast", "Propósito: como descobrir seu propósito de vida", "O Conselho 19"], ["podcast", "Se organize em silêncio: 13 hábitos de organização que funcionam de verdade", "Desfrutando a Vida"], ["video", "Não tenha pena de você", "Faça Hoje · 6:57"], ["video", "Sua vida vai mudar quando você se tornar ousado", "Bárbara · 13:20"], ["video", "Ep 316: A energia que faz as pessoas gostarem de você", "Descobri depois de Adulta · 24:59"], ["video", "A psicologia das mulheres que nunca imploram para ser escolhidas", "Laíza Meletto · 22:17"], ["video", "A psicologia das pessoas altamente desenroladas", "Ernesto Reis · 15:26"]];
+const PROMPTS0=[{"c": "📱 Instagram e conteúdo", "t": "Conteúdo viral", "p": "Você é um estrategista de redes sociais especialista em crescimento acelerado. Analise as últimas 10 tendências virais do Instagram em [seu nicho] e crie 5 ideias curtas, explosivas e com alto potencial de compartilhamento. Seja específico e prático.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "Transformar dor em gancho", "p": "Liste as 10 maiores dores que o público [descrever público] sente sobre [tema]. Transforme cada dor em um gancho de até 10 palavras, pronto para ser usado em Reels. Evite clichês, seja direto e provocador.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "Roteiro de Reels que prende até o fim", "p": "Crie um roteiro de 30 segundos para Reels sobre [tema]. Estrutura: 1) Gancho irresistível, 2) História curta e envolvente, 3) CTA para comentar ou salvar. Use frases curtas e simples. Nenhuma enrolação.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "Otimizar posts com prova social", "p": "Pegue o resultado [inserir resultado] e crie 5 frases curtas que transmitam prova social e curiosidade, perfeitas para texto sobreposto em vídeos. Mantenha impacto máximo em até 10 palavras.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "Conteúdo que gera salvamentos", "p": "Liste 5 dicas práticas e pouco conhecidas sobre [tema]. Cada dica deve ter no máximo 12 palavras, ser clara e fácil de aplicar. O objetivo é criar um carrossel impossível de não salvar.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "Reaproveitar conteúdo", "p": "Transforme este texto [colar texto] em:\n\n1. Roteiro para Reels de 7 segundos,\n2. Carrossel de 5 slides,\n3. Post estático com frase de impacto.\n\nAdapte linguagem e formato para cada caso.", "src": "@erikammello"}, {"c": "📱 Instagram e conteúdo", "t": "CTA irresistível", "p": "Crie 10 CTAs curtos, criativos e diretos que incentivem comentários ou salvamentos em posts sobre [tema]. Evite frases genéricas, use gatilhos de curiosidade e ação imediata.", "src": "@erikammello"}, {"c": "💰 Finanças pessoais", "t": "Raio-X do dinheiro", "p": "Aqui estão minhas entradas e saídas dos últimos 3 meses: [colar]. Me mostre pra onde meu dinheiro realmente vai, em 5 categorias, e as 3 verdades que eu estou evitando olhar. Sem julgamento, só números.", "src": "@sergiovitalhq"}, {"c": "💰 Finanças pessoais", "t": "Detector de vazamento", "p": "Audite meus gastos procurando vazamentos: assinaturas que eu esqueci, tarifas de banco, delivery, parcelinhas e contas que dá pra renegociar. Me dê um plano de corte por prioridade e quanto eu economizo por mês. Meus extratos: [colar].", "src": "@sergiovitalhq"}, {"c": "💰 Finanças pessoais", "t": "Zerando as dívidas", "p": "Minhas dívidas com saldo e juros ao mês: [colar]. Compare bola de neve e avalanche, priorize cartão e cheque especial, me diga se vale trocar dívida cara por barata e me mostre em quantos meses eu fico livre com um pagamento extra de [valor].", "src": "@sergiovitalhq"}, {"c": "💰 Finanças pessoais", "t": "Orçamento que cabe na vida real", "p": "Minha renda mensal é [valor] e meu maior gatilho de gasto é [descrever]. Monte um orçamento 50/30/20 adaptado pra mim, com um valor de lazer que eu não precise sentir culpa, e 3 regras simples pra eu seguir sem planilha.", "src": "@sergiovitalhq"}, {"c": "💰 Finanças pessoais", "t": "Primeiro milhão começa aqui", "p": "Com base em tudo acima, me diga quanto eu consigo investir por mês de forma realista, monte uma sequência de 12 meses do mais simples pro mais avançado e me dê o único passo que eu devo dar ainda esta semana.", "src": "@sergiovitalhq"}, {"c": "🧠 Aprender qualquer coisa", "t": "O destruidor de curva de aprendizado", "p": "Você é um professor que tem só 4 horas comigo e nunca mais vai me ver. Seu único objetivo é me deixar funcional em [HABILIDADE] antes do tempo acabar. Não me dê teoria sem uso prático e não me dê uma lista genérica. Me diga três coisas: o que aprender primeiro, o que ignorar completamente e o único exercício que, feito uma única vez, me colocaria à frente de 70% das pessoas que estudaram isso por meses. Depois me ensine o primeiro passo e espere a minha resposta antes de continuar.", "src": "@fabianocarvalhojr"}, {"c": "🧠 Aprender qualquer coisa", "t": "O simulador de erro real", "p": "Não me explique [CONCEITO]. Me coloque direto numa situação realista em que eu teria que usar isso e provavelmente erraria. Depois espere a minha resposta. Quando eu errar, não me dê a resposta. Me faça uma pergunta que me obrigue a achar onde o meu raciocínio quebrou. Só me dê a resposta depois que eu tiver tentado pelo menos duas vezes. Depois repita o ciclo com uma situação nova até eu acertar sem hesitar.", "src": "@fabianocarvalhojr"}, {"c": "🧠 Aprender qualquer coisa", "t": "O tradutor de linguagem impossível", "p": "O conteúdo abaixo está confuso pra mim. Antes de explicar qualquer coisa, me diga a única ideia central que, quando eu entender, faz o resto se encaixar. Explique só essa ideia primeiro, usando uma analogia do dia a dia e nenhum termo técnico. Depois me faça 3 perguntas que só alguém que entendeu de verdade conseguiria responder. Faça uma de cada vez e espere as minhas respostas. Não avance pro resto até eu acertar as três. [COLE O CONTEÚDO AQUI]", "src": "@fabianocarvalhojr"}, {"c": "🧠 Aprender qualquer coisa", "t": "O arquiteto do caminho pessoal", "p": "O meu objetivo real é [OBJETIVO]. Não é aprender [HABILIDADE] em geral. É alcançar [RESULTADO ESPECÍFICO] até [PRAZO]. Eu já sei [O QUE EU JÁ SEI]. Com base nisso, monte pra mim uma trilha de aprendizado de 7 dias. Cada dia precisa ter: uma única tarefa que caiba em 45 minutos, um critério claro pra eu saber se fiz certo e o que não fazer naquele dia pra eu não perder tempo. Se a trilha inteira não me levar ao objetivo, refaça até levar.", "src": "@fabianocarvalhojr"}, {"c": "🧠 Aprender qualquer coisa", "t": "O detector de lacunas escondidas", "p": "Eu acho que já domino [HABILIDADE]. Quero que você prove que eu estou errado. Me faça 5 perguntas que parecem simples, mas expõem as lacunas de quem nunca se aprofundou de verdade. Faça uma de cada vez e espere cada resposta. Depois de cada resposta, me diga o que ela revela sobre o que ainda falta na minha base. Não pegue leve comigo. Se eu estiver sendo raso, me diga diretamente.", "src": "@fabianocarvalhojr"}, {"c": "🧠 Aprender qualquer coisa", "t": "O método Feynman forçado", "p": "Acabei de estudar [TEMA]. Vou explicar o que entendi como se você fosse uma criança de 10 anos. Espere a minha explicação. Enquanto eu explico, me interrompa toda vez que eu usar um jargão que não sei definir, pular uma etapa do raciocínio ou simplificar tanto que fique errado. No final, me diga exatamente o que esses erros revelam sobre o que ainda não está firme no meu entendimento.", "src": "@fabianocarvalhojr"}];
 const DEF={
  util:[["04:10","04:40","Acordar","pessoal","Água e café rápido"],["04:40","05:50","Academia","saude",""],["05:50","06:20","Banho e café da manhã","pessoal",""],["06:20","07:35","Trilha de estudos","estudo","2 pomodoros + 15 min de revisão do dia anterior","study"],["07:35","08:00","Arrumar e sair","pessoal","5 min até o trabalho"],["08:00","17:30","Trabalho","trabalho","Nos vãos livres, use o banco de tarefas","free"],["17:30","18:40","Buscar a namorada e voltar","pessoal",""],["19:00","19:45","Jantar","pessoal",""],["19:45","19:55","Recordação ativa","estudo","O que lembro do estudo de hoje, sem olhar?","recall"],["19:55","20:05","Planejar o amanhã e oração","fe","Celular longe a partir daqui"],["20:15","04:10","Dormir","descanso","8 horas de sono: é aqui que a memória se fixa"]],
  sab:[["06:30","07:00","Acordar","pessoal",""],["07:00","08:10","Academia","saude",""],["08:10","08:40","Café da manhã","pessoal",""],["08:40","10:10","Estudo longo","estudo","3 pomodoros","study"],["10:10","11:30","Casa, quebra-cabeça ou livro","lazer","Arrumar a casa se não deu na sexta"],["11:40","12:20","Buscar a namorada","pessoal",""],["12:30","13:30","Almoço","pessoal",""],["13:30","22:00","Tarde e noite livres","lazer","Sair, filme, descanso. Sem culpa"],["22:30","06:30","Dormir","descanso",""]],
@@ -673,7 +728,7 @@ let S={rot:{util:DEF.util.map(toObj),sab:DEF.sab.map(toObj),dom:DEF.dom.map(toOb
  g:{on:false,log:[],dirty:true,clientId:"",calId:"",email:"",evRev:{}},atualizadoEm:0,trilhaDone:[0],checks:{},
  habits:["Academia","Estudar 2h","Beber a meta de água","Ler 20 páginas","Dormir até 20h15","Telas até 2h","Oração"],hmarks:{},
  water:{peso:null,meta:3000,log:{},every:120},studyGoal:120,
- books:[{t:"Política é para Todos",a:"Gabriela Prioli",pg:0,tot:0,st:"quero",tema:"Política"},{t:"Como as Democracias Morrem",a:"Steven Levitsky e Daniel Ziblatt",pg:0,tot:0,st:"quero",tema:"Política"}],pace:20,
+ media:MEDIA0.map(([y,t,a])=>({y,t,a,st:"quero",u:""})),prompts:PROMPTS0.map(x=>({...x})),cTab:"livros",mediaF:"todos",pOpen:{},books:[...LIVROS.map(([t,a])=>({t,a,pg:0,tot:0,st:"quero",tema:""}))],pace:20,
  quotes:[],
  lists:{motiv:["Mudar de carreira para a tecnologia","Entender política por todos os lados","Ter uma rotina que me deixa em paz"],afirm:["Um pomodoro de cada vez.","Disciplina é liberdade.","Descansar também faz parte do plano."],forcas:["Organização","Persistência","Curiosidade"],fraq:["Procrastinação","Tempo de tela à noite"],habil:["Desenvolvimento frontend","Uso de IA no trabalho","Estudo com métodos de aprendizagem"]},
  market:Object.fromEntries(Object.entries(MK).map(([k,v])=>[k,v.map(t=>({t,ok:false}))]))};
@@ -690,8 +745,8 @@ Object.assign(S,{
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/minharotina-80b1e6a5a4e5";   // gaveta do Minha Rotina — NÃO MUDAR
-const VERSAO="1.2";
-const ATUALIZACOES=[{v:"1.2",data:"29/10/2026",itens:["Estudo sem horário fixo: a meta é de 2 horas por dia, e você registra a hora e quanto tempo estudou (botão + ou aba Estudos).","A rotina começa vazia, para você montar do seu jeito.","Corrigido: a Trilha de Política não abria no iPhone."]},{v:"1.1",data:"29/10/2026",itens:["A rotina começa só com os blocos de estudo. O resto você inclui do seu jeito, pelo botão + ou em Rotina → Editar.","Meta de água passa para 3 litros por dia."]},{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
+const VERSAO="1.4";
+const ATUALIZACOES=[{v:"1.4",data:"04/11/2026",itens:["Leitura virou Conteúdos, separado em Livros, Podcasts, Vídeos e Cursos, com link para ouvir ou assistir.","Capas dos livros aparecem sozinhas.","Nova aba Prompts, separada por assunto, com busca e botão Copiar.","Os livros de Política saíram da Leitura: eles ficam na trilha da aba Estudos."]},{v:"1.3",data:"30/10/2026",itens:["9 livros novos na estante, na lista Quero ler: Leahy, Julie Smith, Joe Dispenza, Mel Robbins, Robin Sharma, Kishimi e Koga, Brianna Wiest, Iandê Albuquerque e Kahneman."]},{v:"1.2",data:"29/10/2026",itens:["Estudo sem horário fixo: a meta é de 2 horas por dia, e você registra a hora e quanto tempo estudou (botão + ou aba Estudos).","A rotina começa vazia, para você montar do seu jeito.","Corrigido: a Trilha de Política não abria no iPhone."]},{v:"1.1",data:"29/10/2026",itens:["A rotina começa só com os blocos de estudo. O resto você inclui do seu jeito, pelo botão + ou em Rotina → Editar.","Meta de água passa para 3 litros por dia."]},{v:"1.0",data:"29/10/2026",itens:["Primeira versão do Minha Rotina: rotina do dia, da semana e do mês, hábitos, água, estudos com a trilha de Política, leitura, desenvolvimento pessoal e mercado.","Dados salvos na nuvem (Firebase): o celular e o computador mostram a mesma coisa.","Integração com o Google Agenda: a rotina, as revisões e os lembretes de água viram eventos com aviso."]}];
 const DEFAULTS=clone(S);
 function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return b;const r=Object.assign(b,v);
   for(const k of Object.keys(DEFAULTS)){const d=DEFAULTS[k];if(Array.isArray(d)&&!Array.isArray(r[k]))r[k]=r[k]&&typeof r[k]==="object"?Object.values(r[k]):[];else if(d&&typeof d==="object"&&!Array.isArray(d)&&(typeof r[k]!=="object"||r[k]===null||Array.isArray(r[k])))r[k]=clone(d);}
@@ -703,7 +758,9 @@ function normaliza(v){const b=clone(DEFAULTS);if(!v||typeof v!=="object")return 
   Object.keys(r.steps||{}).forEach(k=>{if(!Array.isArray(r.steps[k]))r.steps[k]=r.steps[k]?Object.values(r.steps[k]):[];});
   Object.keys(r.water.log||{}).forEach(k=>{if(!Array.isArray(r.water.log[k]))r.water.log[k]=Object.values(r.water.log[k]||{});});
   return r;}
-function migra(r){if(!r.mig12){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c!=="estudo"||!["Trilha de estudos","Recordação ativa","Estudo longo","Estudo","Revisão e planejar a semana"].includes(b.n));});r.habits=(r.habits||[]).map(h=>h==="Estudar 1h"?"Estudar 2h":h);r.studyGoal=r.studyGoal||120;r.mig12=true;r.mig11=true;r.water.meta=3000;r.done={};r.g.dirty=r.g.on;}
+function migra(r){if(!r.mig14){r.books=(r.books||[]).filter(b=>b.tema!=="Política");const tm=new Set((r.media||[]).map(x=>x.t));r.media=r.media||[];MEDIA0.forEach(([y,t,a])=>{if(!tm.has(t))r.media.push({y,t,a,st:"quero",u:""});});const tp=new Set((r.prompts||[]).map(x=>x.t));r.prompts=r.prompts||[];PROMPTS0.forEach(x=>{if(!tp.has(x.t))r.prompts.push({...x});});r.mig14=true;}
+  if(!r.mig13){const tem=new Set((r.books||[]).map(b=>b.t.toLowerCase()));LIVROS.forEach(([t,a])=>{if(!tem.has(t.toLowerCase()))r.books.push({t,a,pg:0,tot:0,st:"quero",tema:""});});r.mig13=true;}
+  if(!r.mig12){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c!=="estudo"||!["Trilha de estudos","Recordação ativa","Estudo longo","Estudo","Revisão e planejar a semana"].includes(b.n));});r.habits=(r.habits||[]).map(h=>h==="Estudar 1h"?"Estudar 2h":h);r.studyGoal=r.studyGoal||120;r.mig12=true;r.mig11=true;r.water.meta=3000;r.done={};r.g.dirty=r.g.on;}
   if(!r.mig11){["util","sab","dom"].forEach(k=>{r.rot[k]=(r.rot[k]||[]).filter(b=>b.c==="estudo");});r.done={};r.water.meta=3000;r.mig11=true;r.g.dirty=r.g.on;}return r;}
 try{const raw=localStorage.getItem(KEY);if(raw)S=migra(normaliza(JSON.parse(raw)));}catch(e){}
 let fbRef=null,fbTimer=null,ignorar=false,pendente=false;
@@ -717,7 +774,7 @@ function carregarFirebase(){cloud("con");const urls=["https://www.gstatic.com/fi
 function iniciarFirebase(){try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE);const db=firebase.database();fbRef=db.ref(SALA);
   db.ref(".info/connected").on("value",x=>{if(x.val()===true){cloud(pendente?"salvando":"on");if(pendente)enviar();}else cloud("off");});
   fbRef.on("value",snap=>{if(ignorar){ignorar=false;return;}const v=snap.val();
-    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);if(!S.mig12){S=migra(S);gravarLocal();setTimeout(save,0);}gravarLocal();draft=null;render();}else enviar();}
+    if(v&&v.rot){if((v.atualizadoEm||0)>=(S.atualizadoEm||0)){S=normaliza(v);if(!S.mig12||!S.mig13||!S.mig14){S=migra(S);gravarLocal();setTimeout(save,0);}gravarLocal();draft=null;render();}else enviar();}
     else enviar();cloud(pendente?"salvando":"on");},()=>cloud("erro"));}catch(e){cloud("erro");}}
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};
 const dur=b=>{let d=m(b.e)-m(b.s);if(d<=0)d+=1440;return d};
@@ -737,7 +794,7 @@ const FR=["Um pomodoro de cada vez.","Primeiro o sapo, depois o resto.","Foco no
 function renderQuote(){const all=[...S.frases,...FR];document.getElementById("quote").textContent=`"${all[Math.floor((today-new Date(today.getFullYear(),0,0))/864e5)%all.length]}"`;}
 
 // navegação (barra inferior para o celular)
-const VIEWS=["hoje","rotina","habitos","agua","estudos","leitura","eu","casa","google","mais"];
+const VIEWS=["hoje","rotina","habitos","agua","estudos","leitura","prompts","eu","casa","google","mais"];
 function show(v){if(!VIEWS.includes(v))v="hoje";VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);const main=["hoje","rotina","estudos","leitura"].includes(v);document.querySelectorAll("#bnav button").forEach(b=>(b.dataset.v===v||(b.dataset.v==="mais"&&!main&&v!=="mais"))?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));render();}
 document.getElementById("bnav").onclick=e=>{const b=e.target.closest("button");if(b)location.hash=b.dataset.v;};
 document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g)location.hash=g.dataset.go;});
@@ -1083,13 +1140,22 @@ document.getElementById("v-estudos").addEventListener("click",e=>{
   else return;save();renderStudies();});
 
 // ===== LEITURA
+// ===== CAPAS (Google Livros, buscadas uma vez e guardadas)
+const coverBusy=new Set();
+function coverHTML(b,cls){return b.cover?`<img class="${cls}" src="${esc(b.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=&quot;${cls}&quot;>${esc(b.t).replace(/'/g,"&#39;")}</div>'">`:`<div class="${cls}">${esc(b.t)}</div>`;}
+function fetchCovers(){S.books.forEach(b=>{if(b.cover!==undefined||coverBusy.has(b.t))return;coverBusy.add(b.t);
+  const q=encodeURIComponent(`intitle:${b.t.replace(/[?:!]/g," ")}${b.a?" inauthor:"+b.a.split(/ e |,/)[0].replace(/^(Dr|Dra)\.\s*/,""):""}`);
+  fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=5&printType=books`).then(r=>r.ok?r.json():null).then(j=>{
+    const it=(j&&j.items||[]).find(x=>x.volumeInfo&&x.volumeInfo.imageLinks);let u=it?(it.volumeInfo.imageLinks.thumbnail||it.volumeInfo.imageLinks.smallThumbnail):"";
+    b.cover=u?u.replace(/^http:/,"https:").replace("&edge=curl",""):"";save();renderReading();}).catch(()=>{coverBusy.delete(b.t);});});}
 function renderReading(){
+  renderCTabs();if(S.cTab!=="livros"){renderMedia();return;}fetchCovers();
   const B=S.books,lendo=B.find(b=>b.st==="lendo");
   document.getElementById("bookTiles").innerHTML=[["📚",B.length,"Total"],["📖",B.filter(b=>b.st==="lendo").length,"Lendo"],["✅",B.filter(b=>b.st==="lido").length,"Lidos"],["📄",B.reduce((a,b)=>a+(b.st==="lido"?b.tot:b.pg||0),0),"Páginas"]].map(([i,v,k])=>`<div class="tile"><span class="ic">${i}</span><span class="v">${v}</span><span class="k">${k}</span></div>`).join("");
   const rd=document.getElementById("reading"),pc=document.getElementById("pace");
   if(!lendo){rd.innerHTML='<span class="muted">Nenhum livro em leitura. Escolha um na estante.</span>';pc.innerHTML="";}
   else{const p=Math.round(lendo.pg/(lendo.tot||1)*100);
-    rd.innerHTML=`<div class="book"><div class="cover">${esc(lendo.t)}</div><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${esc(lendo.t)}</b><span class="small muted">${esc(lendo.a||"")}</span><div class="prog"><i style="width:${p}%"></i></div><span class="small mono">pág. ${lendo.pg}/${lendo.tot} · ${p}%</span></div></div>
+    rd.innerHTML=`<div class="book"><div class="cover ${lendo.cover?"hasimg":""}">${lendo.cover?`<img src="${esc(lendo.cover)}" alt="" referrerpolicy="no-referrer">`:esc(lendo.t)}</div><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${esc(lendo.t)}</b><span class="small muted">${esc(lendo.a||"")}</span><div class="prog"><i style="width:${p}%"></i></div><span class="small mono">pág. ${lendo.pg}/${lendo.tot} · ${p}%</span></div></div>
     <div class="row"><label class="field" style="flex:1">Parei na página<input type="number" id="pgIn" min="0" value="${lendo.pg}"></label><label class="field" style="flex:1">Total de páginas<input type="number" id="totIn" min="1" value="${lendo.tot}"></label></div>
     <div class="row"><button class="btn sm" id="pgDone">Terminei o livro</button></div>`;
     const rest=Math.max(0,lendo.tot-lendo.pg),dias=Math.ceil(rest/(S.pace||1));const fim=new Date(today);fim.setDate(fim.getDate()+dias);
@@ -1108,8 +1174,47 @@ function renderReading(){
   const lbl={lendo:"lendo",lido:"lido",quero:"quero ler"};
   const F=S.shelfF;document.getElementById("shelfF").innerHTML=[["todos","Todos"],["quero","Quero ler"],["lendo","Lendo"],["lido","Lidos"]].map(([k,v])=>`<button type="button" data-sf="${k}" aria-pressed="${F===k}">${v} (${k==="todos"?B.length:B.filter(b=>b.st===k).length})</button>`).join("");
   const vis=B.map((b,i)=>[b,i]).filter(([b])=>F==="todos"||b.st===F);
-  document.getElementById("shelf").innerHTML=vis.length?vis.map(([b,i])=>`<li><span style="flex:1;min-width:0"><b>${esc(b.t)}</b>${b.a?`<br><span class="small muted">${esc(b.a)}</span>`:""}</span><select data-bs="${i}" aria-label="Situação de ${esc(b.t)}" style="padding:4px 6px;font-size:12.5px">${Object.entries(lbl).map(([k,v])=>`<option value="${k}" ${b.st===k?"selected":""}>${v}</option>`).join("")}</select><button class="x" data-bd="${i}" aria-label="Remover">×</button></li>`).join(""):'<li><span class="muted">Nenhum livro aqui. Toque em "+ Livro".</span></li>';
+  document.getElementById("shelf").innerHTML=vis.length?vis.map(([b,i])=>`<li>${coverHTML(b,"cv")}<span style="flex:1;min-width:0"><b>${esc(b.t)}</b>${b.a?`<br><span class="small muted">${esc(b.a)}</span>`:""}</span><select data-bs="${i}" aria-label="Situação de ${esc(b.t)}" style="padding:4px 6px;font-size:12.5px">${Object.entries(lbl).map(([k,v])=>`<option value="${k}" ${b.st===k?"selected":""}>${v}</option>`).join("")}</select><button class="x" data-bd="${i}" aria-label="Remover">×</button></li>`).join(""):'<li><span class="muted">Nenhum livro aqui. Toque em "+ Livro".</span></li>';
 }
+// ===== CONTEÚDOS: abas por tipo
+const CT=[["livros","📖","Livros"],["podcast","🎧","Podcasts"],["video","▶️","Vídeos"],["curso","🎓","Cursos"]];
+const MST={quero:"quero ver",andamento:"em andamento",feito:"concluído"};
+const MSTP={podcast:"quero ouvir",video:"quero ver",curso:"quero fazer"};
+function renderCTabs(){const T=S.cTab||"livros";
+  document.getElementById("cTabs").innerHTML=CT.map(([k,i,n])=>{const c=k==="livros"?S.books.length:S.media.filter(x=>x.y===k).length;return `<button type="button" role="tab" data-ct="${k}" aria-selected="${T===k}"><i>${i}</i>${n}<small>${c}</small></button>`;}).join("");
+  document.getElementById("c-livros").hidden=T!=="livros";document.getElementById("c-media").hidden=T==="livros";}
+document.getElementById("cTabs").onclick=e=>{const b=e.target.closest("[data-ct]");if(!b)return;S.cTab=b.dataset.ct;S.mediaF="todos";save();renderReading();};
+document.getElementById("cAddBtn").onclick=()=>openAdd(S.cTab==="livros"?"livro":"midia");
+function mediaLink(x){if(x.u)return x.u;const q=encodeURIComponent(`${x.t} ${x.a.split("·")[0]}`);return x.y==="podcast"?`https://open.spotify.com/search/${q}`:x.y==="video"?`https://www.youtube.com/results?search_query=${q}`:`https://www.google.com/search?q=${q}`;}
+function renderMedia(){const T=S.cTab,L=S.media.map((x,i)=>[x,i]).filter(([x])=>x.y===T),F=S.mediaF||"todos";
+  const quero=MSTP[T]||"quero ver";
+  document.getElementById("mediaF").innerHTML=[["todos","Todos"],["quero",quero[0].toUpperCase()+quero.slice(1)],["andamento","Em andamento"],["feito","Concluídos"]].map(([k,v])=>`<button type="button" data-mf2="${k}" aria-pressed="${F===k}">${v} (${k==="todos"?L.length:L.filter(([x])=>x.st===k).length})</button>`).join("");
+  const vis=L.filter(([x])=>F==="todos"||x.st===F);const ic={podcast:"🎧",video:"▶️",curso:"🎓"}[T];
+  const onde={podcast:"Ouvir no Spotify",video:"Ver no YouTube",curso:"Abrir"}[T];
+  document.getElementById("mediaList").innerHTML=vis.length?vis.map(([x,i])=>`<div class="mi ${T} ${x.st==="feito"?"feito":""}"><div class="th">${ic}</div><div style="min-width:0"><b>${esc(x.t)}</b><span class="sub">${esc(x.a||"")}</span>
+    <div class="acts"><a href="${esc(mediaLink(x))}" target="_blank" rel="noopener">${x.u?onde.replace(/ no .*/,""):onde} ›</a><select data-ms="${i}" aria-label="Situação">${Object.entries(MST).map(([k,v])=>`<option value="${k}" ${x.st===k?"selected":""}>${k==="quero"?quero:v}</option>`).join("")}</select></div></div>
+    <button class="x" type="button" data-md2="${i}" aria-label="Remover">×</button></div>`).join(""):`<div class="note">Nada aqui ainda. Toque em "+ Adicionar" para incluir ${{podcast:"um podcast",video:"um vídeo",curso:"um curso"}[T]}.</div>`;}
+document.getElementById("mediaF").onclick=e=>{const b=e.target.closest("[data-mf2]");if(b){S.mediaF=b.dataset.mf2;save();renderMedia();}};
+document.getElementById("mediaList").addEventListener("change",e=>{const s2=e.target.closest("[data-ms]");if(!s2)return;S.media[+s2.dataset.ms].st=s2.value;save();renderMedia();renderCTabs();});
+document.getElementById("mediaList").addEventListener("click",e=>{const b=e.target.closest("[data-md2]");if(!b)return;S.media.splice(+b.dataset.md2,1);save();renderReading();});
+
+// ===== PROMPTS por assunto
+const phHL=t=>esc(t).replace(/\[([^\]]+)\]/g,'<span class="ph">[$1]</span>');
+let pQuery="";
+function renderPrompts(){const q=pQuery.trim().toLowerCase();const cats=[...new Set(S.prompts.map(x=>x.c))];
+  const box=document.getElementById("pCats");
+  if(!S.prompts.length){box.innerHTML='<div class="note">Nenhum prompt ainda. Toque em "+ Prompt".</div>';return;}
+  box.innerHTML=cats.map(c=>{const L=S.prompts.map((x,i)=>[x,i]).filter(([x])=>x.c===c&&(!q||(x.t+" "+x.p).toLowerCase().includes(q)));if(q&&!L.length)return"";
+    const op=q?true:!!S.pOpen[c];
+    return `<div class="pc"><button type="button" class="pch" data-pc="${esc(c)}" aria-expanded="${op}">${esc(c)}<span class="n">${L.length}</span><span class="chev">${op?"▴":"▾"}</span></button>${op?`<div class="pb">${L.map(([x,i])=>`<div class="pr1" data-pi="${i}"><div class="tt"><b>${esc(x.t)}</b><button class="x" type="button" data-pdel="${i}" aria-label="Apagar prompt">×</button></div><div class="tx">${phHL(x.p)}</div>
+      <div class="ft"><button class="btn sm dark" type="button" data-pcp="${i}">Copiar</button><button class="btn sm" type="button" data-pmore="${i}">Ver tudo</button>${x.src?`<span class="src">${esc(x.src)}</span>`:""}</div></div>`).join("")}</div>`:""}</div>`;}).join("")||'<div class="note">Nenhum prompt com essa busca.</div>';}
+document.getElementById("pSearch").oninput=e=>{pQuery=e.target.value;renderPrompts();};
+document.getElementById("pCats").addEventListener("click",e=>{
+  const h=e.target.closest("[data-pc]");if(h){const c=h.dataset.pc;S.pOpen[c]=!S.pOpen[c];save();renderPrompts();return;}
+  const cp=e.target.closest("[data-pcp]");if(cp){const t=S.prompts[+cp.dataset.pcp].p;try{navigator.clipboard.writeText(t).then(()=>toast("Prompt copiado!"),()=>showCopy(t));}catch(er){showCopy(t);}return;}
+  const mo=e.target.closest("[data-pmore]");if(mo){const card=mo.closest(".pr1");card.classList.toggle("open");mo.textContent=card.classList.contains("open")?"Ver menos":"Ver tudo";return;}
+  const d=e.target.closest("[data-pdel]");if(d){const i=+d.dataset.pdel;sheet(head("Apagar prompt?")+`<p style="margin:0">"${esc(S.prompts[i].t)}" vai sair da lista.</p><div class="row"><button class="btn dark" type="button" id="pdOk">Apagar</button><button class="btn" type="button" id="pdNo">Cancelar</button></div>`);bindClose();
+    document.getElementById("pdNo").onclick=closeSheet;document.getElementById("pdOk").onclick=()=>{S.prompts.splice(i,1);save();closeSheet();renderPrompts();toast("Prompt apagado");};}});
 document.getElementById("shelfF").onclick=e=>{const b=e.target.closest("[data-sf]");if(b){S.shelfF=b.dataset.sf;save();renderReading();}};
 document.getElementById("quotes").onclick=e=>{const b=e.target.closest("[data-qd]");if(b){S.quotes.splice(b.dataset.qd,1);save();renderReading();}};
 document.getElementById("qForm").onsubmit=e=>{e.preventDefault();const v=document.getElementById("qIn").value.trim();if(!v)return;const l=S.books.find(b=>b.st==="lendo");S.quotes.unshift({t:v,b:l?l.t:""});document.getElementById("qIn").value="";save();renderReading();};
@@ -1222,7 +1327,7 @@ document.getElementById("gCidSave").onclick=()=>{const v=document.getElementById
 document.getElementById("gColors")&&(document.getElementById("gColors").innerHTML=Object.keys(CATS).map(c=>`<div><span class="sw" style="background:${cv(c)}"></span>${CATS[c]} → cor "${GCOLOR[c]}"</div>`).join(""));
 
 // ===== ADICIONAR (botão + e "+ Item" de cada aba)
-const QA=[["estudo","⏱️","Registrar estudo"],["livro","📖","Livro"],["habito","✅","Hábito"],["plano","🐸","Tarefa de amanhã"],["agua","💧","Água"],["mercado","🛒","Item do mercado"],["tema","🧭","Tema de estudo"],["etapa","🪜","Etapa de estudo"],["bloco","🗓️","Bloco na rotina"],["citacao","❝","Citação"],["cl:w","🔁","Tarefa da semana"],["cl:m","📅","Tarefa do mês"],["cl:y","🎯","Meta do ano"],["eu","🌱","Desenvolvimento pessoal"],["link","🔗","Atalho"],["frase","💡","Frase"]];
+const QA=[["estudo","⏱️","Registrar estudo"],["livro","📖","Livro"],["midia","🎧","Podcast, vídeo ou curso"],["prompt","💬","Prompt"],["habito","✅","Hábito"],["plano","🐸","Tarefa de amanhã"],["agua","💧","Água"],["mercado","🛒","Item do mercado"],["tema","🧭","Tema de estudo"],["etapa","🪜","Etapa de estudo"],["bloco","🗓️","Bloco na rotina"],["citacao","❝","Citação"],["cl:w","🔁","Tarefa da semana"],["cl:m","📅","Tarefa do mês"],["cl:y","🎯","Meta do ano"],["eu","🌱","Desenvolvimento pessoal"],["link","🔗","Atalho"],["frase","💡","Frase"]];
 document.getElementById("fab").onclick=()=>{sheet(head("Adicionar")+`<div class="qadd">${QA.map(([k,i,n])=>`<button type="button" data-qa="${k}"><i>${i}</i>${n}</button>`).join("")}</div>`);bindClose();root.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>openAdd(b.dataset.qa));};
 document.addEventListener("click",e=>{const a=e.target.closest("[data-add]");if(a){e.preventDefault();openAdd(a.dataset.add);}});
 const opt=(arr,sel)=>arr.map(([v,t])=>`<option value="${esc(v)}" ${v===sel?"selected":""}>${esc(t)}</option>`).join("");
@@ -1234,6 +1339,10 @@ const val=id=>{const el=document.getElementById("f_"+id);return el?(el.type==="c
 function openAdd(kind){
   const lbl={"cl:w":"Tarefa da semana","cl:m":"Tarefa do mês","cl:y":"Meta do ano"};
   const D={
+    midia:{t:"Adicionar conteúdo",f:F.sel("y","Tipo",[["podcast","🎧 Podcast"],["video","▶️ Vídeo"],["curso","🎓 Curso"]],S.cTab!=="livros"?S.cTab:"podcast")+F.txt("t","Título","Ex.: Ep 12: Como criar hábitos")+F.txt("a","Canal, programa ou plataforma","Ex.: Psicologia na Prática",false)+F.txt("u","Link (opcional)","https://…",false,"url"),
+      ok:()=>{const y=val("y");S.media.push({y,t:val("t"),a:val("a"),u:val("u"),st:"quero"});S.cTab=y;return["leitura","Adicionado"];}},
+    prompt:{t:"Novo prompt",f:F.sel("c","Assunto",[...[...new Set(S.prompts.map(x=>x.c))].map(c=>[c,c]),["__novo","+ Novo assunto"]],[...new Set(S.prompts.map(x=>x.c))][0]||"__novo")+`<label class="field" id="ncWrap" hidden>Nome do novo assunto<input id="f_nc" placeholder="Ex.: Trabalho na Viena"></label>`+F.txt("t","Nome do prompt","Ex.: Resumo de reunião")+`<label class="field">Texto do prompt<textarea id="f_p" required placeholder="Cole aqui o prompt. Use [colchetes] para o que muda a cada vez."></textarea></label>`+F.txt("src","De onde veio (opcional)","Ex.: @perfil do Instagram",false),
+      ok:()=>{let c=val("c");if(c==="__novo")c=val("nc");if(!c){toast("Dê um nome ao assunto");return null;}const t=val("t"),pp=document.getElementById("f_p").value.trim();if(!pp)return null;S.prompts.push({c,t,p:pp,src:val("src")});S.pOpen[c]=true;return["prompts","Prompt salvo"];}},
     estudo:{t:"Registrar estudo",f:`<div class="two"><label class="field">Hora que comecei<input id="f_at" type="time" value="${nowHM()}" required></label><label class="field">Quanto tempo (min)<input id="f_min" type="number" min="5" max="600" step="5" value="60" required></label></div><div class="row">${[25,30,45,60,90,120].map(v=>`<button type="button" class="btn sm" data-qm="${v}">${hfmt(v)}</button>`).join("")}</div><label class="field">O que estudei<input id="f_w" value="${esc(nextStep())}" placeholder="Ex.: Módulo 0"></label>`,
       ok:()=>{const mn=+val("min");if(!mn)return null;S.study.push({date:TODAY,min:mn,at:val("at"),what:val("w")||"Estudo"});return["estudos",`+${hfmt(mn)} de estudo registrado`];}},
     livro:{t:"Adicionar livro",f:F.txt("t","Título","Ex.: Conflito de Visões")+F.txt("a","Autor","Ex.: Thomas Sowell",false)+`<div class="two">${F.txt("tot","Total de páginas","Ex.: 320",false,"number")}${F.sel("st","Situação",[["quero","Quero ler"],["lendo","Lendo agora"],["lido","Já li"]],"quero")}</div>`+F.sel("tema","Faz parte de qual tema?",[["","Nenhum (leitura livre)"],...S.queue.map(q=>[q,q])],""),
@@ -1259,12 +1368,13 @@ function openAdd(kind){
   const d=D[kind];if(!d)return;
   sheet(head(esc(d.t))+`<form class="form" id="addForm">${d.f}<button class="btn dark" type="submit">Salvar</button></form>`);bindClose();
   root.querySelectorAll("[data-qw]").forEach(b=>b.onclick=()=>{addWater(+b.dataset.qw);closeSheet();});
+  const fc=document.getElementById("f_c"),nw=document.getElementById("ncWrap");if(fc&&nw){const tg=()=>{nw.hidden=fc.value!=="__novo";};fc.onchange=tg;tg();}
   root.querySelectorAll("[data-qm]").forEach(b=>b.onclick=()=>{document.getElementById("f_min").value=b.dataset.qm;});
   const first=root.querySelector("input:not([type=checkbox]),select");if(first&&window.innerWidth>700)first.focus();
   document.getElementById("addForm").onsubmit=e=>{e.preventDefault();const r=d.ok();if(!r)return;save();closeSheet();if(r[0]){if(location.hash.slice(1)!==r[0])location.hash=r[0];else render();}else render();if(r[1])toast(r[1]);};
 }
 
-function render(){syncPill();renderQuote();renderTiles();renderNow();renderClock();renderTimeline();renderPlan();renderRotina();renderHabits();renderWater();renderStudies();renderReading();renderEu();renderMarket();renderGoogle();}
+function render(){syncPill();renderQuote();renderPrompts();renderTiles();renderNow();renderClock();renderTimeline();renderPlan();renderRotina();renderHabits();renderWater();renderStudies();renderReading();renderEu();renderMarket();renderGoogle();}
 document.getElementById("verBtn").textContent="v"+VERSAO;
 document.getElementById("verBtn").onclick=()=>{sheet(head("Novidades")+ATUALIZACOES.map(a=>`<div><b>Versão ${a.v}</b> <span class="muted small">· ${a.data}</span><ul style="margin:6px 0 0;padding-left:18px">${a.itens.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`).join(""));bindClose();};
 show(location.hash.slice(1)||"hoje");
